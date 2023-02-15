@@ -15,6 +15,10 @@ def clean_phone_numbers(phone_numbers)
   end
 end
 
+def time_targeting(time)
+   t = time.split(' ')[1].split(':')[0]
+end
+
 def legislators_by_zipcode(zip)
   civic_info = Google::Apis::CivicinfoV2::CivicInfoService.new
   civic_info.key = 'AIzaSyClRzDqDh5MsXwnCWi0kOiiBivP6JsSyBw'
@@ -50,18 +54,24 @@ contents = CSV.open(
 
 template_letter = File.read('form_letter.erb')
 erb_template = ERB.new template_letter
-
+list_of_registration_hours = []
 contents.each do |row|
   id = row[0]
   name = row[:first_name]
   phone_numbers = row[:homephone]
+  time = row[:regdate]
   zipcode = clean_zipcode(row[:zipcode])
   legislators = legislators_by_zipcode(zipcode)
 
   form_letter = erb_template.result(binding)
 
   #save_thank_you_letter(id,form_letter)
-  clean_phone_numbers(phone_numbers)
+  #clean_phone_numbers(phone_numbers)
+  list_of_registration_hours << time_targeting(time)
 end
 
-
+the_number_of_people_at_a_certain_hour = Hash.new(0)
+list_of_registration_hours.each { |v|the_number_of_people_at_a_certain_hour.store(v, the_number_of_people_at_a_certain_hour[v]+1) }
+the_number_of_people = 0
+the_number_of_people_at_a_certain_hour.each_value { |v| the_number_of_people = v if v > the_number_of_people }
+the_number_of_people_at_a_certain_hour.each { |k,v| puts k if v == the_number_of_people }
