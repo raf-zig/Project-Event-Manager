@@ -10,9 +10,9 @@ end
 def clean_phone_numbers(phone_numbers)
   phone_numbers.to_s.tr!('^0-9', '')
   if phone_numbers.size == 11 and phone_numbers[0] == '1'
-    puts phone_numbers[1..10]
+     phone_numbers[1..10]
   elsif phone_numbers.size == 10
-    puts phone_numbers   
+     phone_numbers  
   end
 end
 
@@ -20,7 +20,7 @@ def time_targeting(time)
   time.split(' ')[1].split(':')[0]
 end
 
-def day_of_the_week_targeting(time)
+def day_of_week_targeting(time)
   date = time.split(' ')[0].split('/')
   date.map! { |x|  x == date[2]? ("20" + x).to_i: x.to_i }
   month, day, year = date[0], date[1], date[2]
@@ -63,8 +63,9 @@ contents = CSV.open(
 template_letter = File.read('form_letter.erb')
 erb_template = ERB.new template_letter
 
+list_of_phone_numbers = []
 list_of_registration_hours = []
-list_of_days_of_the_week = []
+list_of_days_of_week = []
 
 contents.each do |row|
   id = row[0]
@@ -76,20 +77,23 @@ contents.each do |row|
 
   form_letter = erb_template.result(binding)
 
-  #save_thank_you_letter(id,form_letter)
-  #clean_phone_numbers(phone_numbers)
+  save_thank_you_letter(id,form_letter)
+  list_of_phone_numbers << clean_phone_numbers(phone_numbers)
   list_of_registration_hours << time_targeting(time)
-  list_of_days_of_the_week << day_of_the_week_targeting(time)
+  list_of_days_of_week << day_of_week_targeting(time)
 end
 
-the_number_of_people_at_a_certain_hour = Hash.new(0)
-list_of_registration_hours.each { |v|the_number_of_people_at_a_certain_hour.store(v, the_number_of_people_at_a_certain_hour[v]+1) }
-the_number_of_people = 0
-the_number_of_people_at_a_certain_hour.each_value { |v| the_number_of_people = v if v > the_number_of_people }
-the_number_of_people_at_a_certain_hour.each { |k,v| puts k if v == the_number_of_people }
+number_of_people_at_certain_hour = Hash.new(0)
+list_of_registration_hours.each { |v|number_of_people_at_certain_hour.store(v, number_of_people_at_certain_hour[v]+1) }
+number_of_people = 0
+number_of_people_at_certain_hour.each_value { |v| number_of_people = v if v > number_of_people }
+number_of_people_at_certain_hour.each { |k,v| puts "Most people registered at #{k}:00" if v == number_of_people }
 
-the_number_of_day_of_the_week_with_more_people_registration = Hash.new(0)
-list_of_days_of_the_week.each { |v| the_number_of_day_of_the_week_with_more_people_registration.store(v, the_number_of_day_of_the_week_with_more_people_registration[v]+1) }
-number_of_registered_people = 0
-the_number_of_day_of_the_week_with_more_people_registration.each_value { |v| number_of_registered_people = v if v > number_of_registered_people }
-the_number_of_day_of_the_week_with_more_people_registration.each { |k,v| puts k if v == number_of_registered_people }
+number_of_day_of_with_more_registration = Hash.new(0)
+list_of_days_of_week.each { |v| number_of_day_of_with_more_registration.store(v, number_of_day_of_with_more_registration[v]+1) }
+max_number_of_registered_people = 0
+number_of_day_of_with_more_registration.each_value { |v| max_number_of_registered_people = v if v > max_number_of_registered_people }
+number_of_day_of_with_more_registration.each { |k,v| puts "In the #{k} day of the week, the most people registered" if v == max_number_of_registered_people }
+
+puts 'Phone numbers of registered people -'
+list_of_phone_numbers.each { |i| puts i if i != nil}
